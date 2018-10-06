@@ -1,0 +1,3 @@
+[submodule "testchain"]
+	path = testchain
+	url = https://github.com/nward13/testchain.git
