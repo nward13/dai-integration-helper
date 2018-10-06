@@ -3,7 +3,6 @@ const { MKR, DAI, ETH, WETH, PETH, USD_ETH, USD_MKR, USD_DAI } = Maker;
 const makerContracts = require('@makerdao/dai/contracts/contracts').default;
 const MatchingMarketInterface = require('../build/contracts/MatchingMarketInterface.json').abi;
 const SaiTub = require('../build/contracts/SaiTub.json').abi;
-// const MatchingMarketInterface = require('../build/contracts/MatchingMarketInterface.json');
 const Web3 = require('web3');
 
 
@@ -19,14 +18,12 @@ const Web3 = require('web3');
 // TODO: make an option to use on kovan with metamask account
 // TODO: error catching
 
-// export default class DaiTestchainService {
 class DaiTestchainService {
 
   // TODO: deploy OasisDirect contract from this script and log the address, then there is no need for user to do it
   //        return it in some way, then put it in the tutorial contract constructor, so user just has to run:
   //        truffle console
   //        const DaiTestchainService = require("file")
-  //        --- however else you get the object
   //        foo = new DaiTestchainService()
   //        truffle compile
   //        truffle migrate tutorialContract foo.OasisDirectAddress
@@ -161,14 +158,15 @@ class DaiTestchainService {
     // are carried through, so lockAmount in ETH is locked, not in Wei
     const cdp = await this.maker.openCdp();
     console.log("Made it past makeDai() -- maker.openCdp().");
-    await cdp.lockEth(lockAmount);
+    console.log("CDP: ", cdp);
+
+    await cdp.lockEth(0.5);
+    // await cdp.lockEth(lockAmount);
     console.log("Made it past makeDai() -- cdp.lockEth().");
-    // Draw dai
-    const cdpId= await cdp.getId();
-    console.log("CDP Id: ", cdpId);
-    // const cdpInfo = await cdp.getInfo(cdpId);
+    
+    
     console.log("Dai Amount: ", daiAmt);
-    const cdpInfo = await cdp.getInfo(cdpId);
+    const cdpInfo = await cdp.getInfo();
     console.log("CDP Info: ");
     console.log(cdpInfo[0].toString());
     console.log(cdpInfo[1].toString());
@@ -272,9 +270,11 @@ class DaiTestchainService {
 
   async offerWethForDai(wethAmt, sellPrice=0) {
     // Places a limit offer on OasisDex, selling Weth for Dai
+    console.log("Top of offerWethForDai(", wethAmt, ", ", sellPrice, ")");
     
     // Check that initialize() function has completed
     await this._initialized;
+    console.log("Passed initialization.");
 
     // **price is total cost of the Weth sold, in Dai (ETH units, not Wei). 
     // Defaults to the USD price of ETH, which is ~ equal to the current market price of dai
@@ -282,7 +282,10 @@ class DaiTestchainService {
       sellPrice = (this.eth_usd_price) * wethAmt;
     
     // Wrap ETH (ETH => WETH)
-    await this.wethToken.deposit(wethAmt, ETH);
+    console.log("Above this.wethToken.deposit");
+    // await this.wethToken.deposit(wethAmt, ETH);
+    await this.wethToken.deposit(wethAmt);
+    console.log("Below this.wethToken.deposit");
 
     // Make an offer on OasisDex
     await this.offer(wethAmt, this.makerContractAddresses.weth, sellPrice, this.makerContractAddresses.dai, "Weth", "Dai");
